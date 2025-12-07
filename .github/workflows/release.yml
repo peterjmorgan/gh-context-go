@@ -1,0 +1,24 @@
+# ABOUTME: GitHub Actions workflow for releasing gh-context extension
+# ABOUTME: Uses gh-extension-precompile to build cross-platform binaries
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and Release
+        uses: cli/gh-extension-precompile@v2
+        with:
+          go_version_file: go.mod
