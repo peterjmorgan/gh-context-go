@@ -13,11 +13,11 @@ import (
 
 // Context represents a saved GitHub CLI context (account/host configuration).
 type Context struct {
-	Name         string // Context name (derived from filename, not stored in file)
-	Hostname     string // GitHub host (e.g., github.com, github.enterprise.com)
-	User         string // GitHub username
-	Transport    string // ssh or https
-	SSHHostAlias string // Optional SSH host alias for custom SSH configs
+	Name      string // Context name (derived from filename, not stored in file)
+	Hostname  string // GitHub host (e.g., github.com)
+	User      string // GitHub username
+	Transport string // ssh or https
+	SSHKey    string // Path to SSH key (e.g., ~/.ssh/id_personal)
 }
 
 // validNamePattern defines valid context name characters.
@@ -71,8 +71,13 @@ func Load(name string) (*Context, error) {
 			ctx.User = value
 		case "TRANSPORT":
 			ctx.Transport = value
+		case "SSH_KEY":
+			ctx.SSHKey = value
 		case "SSH_HOST_ALIAS":
-			ctx.SSHHostAlias = value
+			// Legacy field - migrate to SSH_KEY if SSH_KEY not set
+			if ctx.SSHKey == "" {
+				ctx.SSHKey = value
+			}
 		}
 	}
 
@@ -99,7 +104,7 @@ func (c *Context) Save() error {
 	fmt.Fprintf(file, "HOSTNAME=%s\n", c.Hostname)
 	fmt.Fprintf(file, "USER=%s\n", c.User)
 	fmt.Fprintf(file, "TRANSPORT=%s\n", c.Transport)
-	fmt.Fprintf(file, "SSH_HOST_ALIAS=%s\n", c.SSHHostAlias)
+	fmt.Fprintf(file, "SSH_KEY=%s\n", c.SSHKey)
 
 	return nil
 }
@@ -149,8 +154,8 @@ func Delete(name string) error {
 // String returns a human-readable representation of the context.
 func (c *Context) String() string {
 	s := fmt.Sprintf("%s@%s, %s", c.User, c.Hostname, c.Transport)
-	if c.SSHHostAlias != "" {
-		s += fmt.Sprintf(", ssh_host=%s", c.SSHHostAlias)
+	if c.SSHKey != "" {
+		s += fmt.Sprintf(", key=%s", c.SSHKey)
 	}
 	return s
 }
