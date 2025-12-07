@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/pmorgan/gh-context/cmd"
+	"github.com/peterjmorgan/gh-context-go/cmd"
 )
 
 func main() {
